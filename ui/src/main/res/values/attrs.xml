@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="ToolbarView">
+        <attr name="tv_title" format="string" />
+    </declare-styleable>
+
+    <declare-styleable name="LabelWithBody">
+        <attr name="lwb_label" format="reference|string" />
+    </declare-styleable>
+</resources>

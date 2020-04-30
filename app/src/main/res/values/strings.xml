@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">GitHubUsers</string>
+    <string name="users_list_users_error">Error loading users</string>
+    <string name="users_list_users_empty">Empty users list</string>
+    <string name="users_list_users_repositories_error">Users repositories loading error</string>
+    <string name="users_list_users_repositories_empty">User does not own any repository</string>
+</resources>
