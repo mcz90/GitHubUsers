@@ -1,36 +1,23 @@
 package com.czyzewski.githubuserslist
 
-import android.widget.ProgressBar
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.Observer
-import androidx.recyclerview.widget.RecyclerView
-import com.czyzewski.ui.ErrorView
-import com.czyzewski.ui.ProgressView
-import com.czyzewski.ui.ToolbarView
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.serialization.ImplicitReflectionSerializer
 
+@ImplicitReflectionSerializer
 @InternalCoroutinesApi
-class UsersListView(
-    private val renderer: IUsersListRenderer,
-    private val viewModel: UsersListViewModel,
-    private val lifecycleOwner: LifecycleOwner
-) : IUsersListView {
+@ExperimentalCoroutinesApi
+class UsersListView(private val renderer: IUsersListRenderer) : IUsersListView {
 
-    override fun render(state: UsersListState) {
-        renderer.render(state)
+    override fun <Components> attach(components: Components) {
+        renderer.attach(components as UserListComponents)
     }
 
-    override fun observe() {
-        viewModel.state.observe(lifecycleOwner, Observer { renderer.render(it) } )
+    override fun <State> render(state: State) {
+        renderer.render(state as UsersListState)
     }
 
-    override fun retain(
-        recyclerView: RecyclerView,
-        toolbar: ToolbarView,
-        progressView: ProgressView,
-        bottomProgressBar: ProgressBar,
-        errorView: ErrorView
-    ) {
-        renderer.retain(recyclerView, toolbar, progressView, bottomProgressBar, errorView)
+    override fun onConfigurationChanged(orientation: Int) {
+        renderer.onConfigurationChanged(orientation)
     }
 }

@@ -1,59 +1,41 @@
 package com.czyzewski.githubuserslist
 
-import android.widget.ProgressBar
-import androidx.annotation.StringRes
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.LiveData
-import androidx.recyclerview.widget.RecyclerView
-import com.czyzewski.models.RepositoriesModel
-import com.czyzewski.models.HeaderDataModel
-import com.czyzewski.models.UserModel
-import com.czyzewski.ui.ErrorView
-import com.czyzewski.ui.ProgressView
-import com.czyzewski.ui.ToolbarView
-import kotlinx.coroutines.CoroutineScope
+import com.czyzewski.mvi.IMviRenderer
+import com.czyzewski.mvi.IMviView
+import com.czyzewski.mvi.ScreenIntent
+import kotlinx.serialization.ImplicitReflectionSerializer
 
-interface IUsersListView : LifecycleObserver {
-    fun render(state: UsersListState)
-    fun observe()
-    fun retain(
-        recyclerView: RecyclerView,
-        toolbar: ToolbarView,
-        progressView: ProgressView,
-        bottomProgressBar: ProgressBar,
-        errorView: ErrorView
-    )
-}
+@ImplicitReflectionSerializer
+interface IUsersListView : IMviView<UsersListState, UserListComponents>
 
-interface IUsersListViewModel : CoroutineScope {
-    val state: LiveData<UsersListState>
-    fun onIntentReceived(intent: UsersListIntent)
-}
+@ImplicitReflectionSerializer
+interface IUsersListRenderer : IMviRenderer<UsersListState, UserListComponents>
 
 interface IUsersListNavigator {
     fun navigateUp()
+    fun navigateToUserDetailsScreen(userId: Long, userName: String, transitionData: TransitionData)
 }
 
-sealed class UsersListIntent {
+sealed class UsersListIntent : ScreenIntent {
+    object Init : UsersListIntent()
     object BackPress : UsersListIntent()
+    object RefreshPress : UsersListIntent()
+    data class SearchPress(val inSearchMode: Boolean) : UsersListIntent()
+    data class SearchInputChanged(val query: String) : UsersListIntent()
     object ScrolledToBottom : UsersListIntent()
     data class UsersFetched(val list: List<Pair<String, Long>>) : UsersListIntent()
-    data class SyncIconClicked(val data : Pair<String, Long>) : UsersListIntent()
+    data class SyncIconClicked(val data: Pair<String, Long>) : UsersListIntent()
+    data class UserClicked(
+        val userId: Long,
+        val userName: String,
+        val transitionData: TransitionData
+    ) : UsersListIntent()
 }
 
-sealed class UsersListState {
-    object UsersLoading : UsersListState()
-    data class UsersEmpty(val headerDataModel: HeaderDataModel, @StringRes val issueResId: Int) : UsersListState()
-    data class UsersLoaded(val data: List<UserModel>, val headerDataModel: HeaderDataModel) : UsersListState()
-    object MoreUsersLoading : UsersListState()
-    object AllLoaded : UsersListState()
-    data class UsersError(val headerDataModel: HeaderDataModel, @StringRes val issueResId: Int) : UsersListState()
-
-    data class RepositoriesLoading(val userId: Long) : UsersListState()
-    data class RepositoriesLoaded(val userId: Long, val data: RepositoriesModel, val headerDataModel: HeaderDataModel) : UsersListState()
-    data class RepositoriesEmpty(val userId: Long, val headerDataModel: HeaderDataModel, @StringRes val issueResId: Int) : UsersListState()
-    data class RepositoriesError(val userId: Long, val headerDataModel: HeaderDataModel, @StringRes val issueResId: Int) : UsersListState()
-    data class RepositoriesSyncing(val userId: Long) : UsersListState()
-    data class SyncSuccess(val userId: Long, val data: RepositoriesModel, val headerDataModel: HeaderDataModel) : UsersListState()
-    data class SyncError(val headerDataModel: HeaderDataModel?, val userId: Long, @StringRes val issueResId: Int) : UsersListState()
+enum class LoadingState {
+    INITIAL,
+    SEARCH,
+    MORE,
+    LOADING_REPO,
+    LOADING_RATE_LIMIT
 }

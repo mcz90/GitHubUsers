@@ -4,5 +4,5 @@ data class UserUiModel(
     val userId: Long,
     val userName: String,
     val avatarUrl: String,
-    val repositories: RepositoriesUi
+    val repositories: RepositoriesUiModel
 )

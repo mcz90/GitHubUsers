@@ -1,10 +1,9 @@
 package com.czyzewski.net.dto
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class RepositoryDto(
-    @SerializedName("id")
     val id: Long,
-    @SerializedName("name")
     val name: String
 )

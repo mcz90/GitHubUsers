@@ -23,6 +23,4 @@ class SimpleDividerItemDecoration(private val context: Context) : RecyclerView.I
             drawable.draw(c)
         }
     }
-
-
 }

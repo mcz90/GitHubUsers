@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
+
+    <com.czyzewski.ui.view.ToolbarView
+        android:id="@+id/toolbarView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tv_title="details" />
+
+    <ImageView
+        android:id="@+id/userImage"
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:background="@color/colorAccent"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbarView" />
+
+    <com.czyzewski.ui.view.LabelWithIconView
+        android:id="@+id/userNameLabelWithIcon"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintBottom_toTopOf="@id/userLocationLabelWithIcon"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toEndOf="@id/userImage"
+        app:layout_constraintTop_toTopOf="@id/userImage"
+        tools:lwi_icon="@drawable/ic_home_16"
+        tools:lwi_label="@string/app_name" />
+
+    <com.czyzewski.ui.view.LabelWithIconView
+        android:id="@+id/userLocationLabelWithIcon"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@id/userCompanyLabelWithIcon"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toEndOf="@id/userImage"
+        app:layout_constraintTop_toBottomOf="@id/userNameLabelWithIcon"
+        tools:lwi_icon="@drawable/ic_home_16"
+        tools:lwi_label="@string/app_name" />
+
+    <com.czyzewski.ui.view.LabelWithIconView
+        android:id="@+id/userCompanyLabelWithIcon"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@id/userTwitterLabelWithIcon"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toEndOf="@id/userImage"
+        app:layout_constraintTop_toBottomOf="@id/userLocationLabelWithIcon"
+        tools:lwi_icon="@drawable/ic_home_16"
+        tools:lwi_label="@string/app_name" />
+
+    <com.czyzewski.ui.view.LabelWithIconView
+        android:id="@+id/userTwitterLabelWithIcon"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toEndOf="@id/userImage"
+        app:layout_constraintTop_toBottomOf="@id/userCompanyLabelWithIcon"
+        tools:lwi_icon="@drawable/ic_home_16"
+        tools:lwi_label="@string/app_name" />
+
+    <com.czyzewski.ui.view.RoundedHeaderView
+        android:id="@+id/reposHeaderView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        app:layout_constraintEnd_toStartOf="@id/gistsHeaderView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/userImage" />
+
+    <com.czyzewski.ui.view.RoundedHeaderView
+        android:id="@+id/gistsHeaderView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/followersHeaderView"
+        app:layout_constraintStart_toEndOf="@id/reposHeaderView"
+        app:layout_constraintTop_toBottomOf="@id/userImage" />
+
+    <com.czyzewski.ui.view.RoundedHeaderView
+        android:id="@+id/followersHeaderView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/gistsHeaderView"
+        app:layout_constraintTop_toBottomOf="@id/userImage" />
+
+    <com.czyzewski.ui.view.ErrorView
+        android:id="@+id/errorView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbarView" />
+
+    <com.czyzewski.ui.view.ProgressView
+        android:id="@+id/progressView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbarView" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

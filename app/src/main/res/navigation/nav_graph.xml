@@ -9,6 +9,35 @@
         android:id="@+id/listFragment"
         android:name="com.czyzewski.githubuserslist.UsersListFragment"
         android:label="UsersListFragment"
-        tools:layout="@layout/fragment_users_list"/>
+        tools:layout="@layout/fragment_users_list">
+
+        <action
+            android:id="@+id/actionUsersListToUserDetails"
+            app:destination="@id/detailsFragment"
+            app:popUpTo="@id/listFragment" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/detailsFragment"
+        android:name="com.czyzewski.userdetails.UserDetailsFragment"
+        android:label="UserDetailsFragment"
+        tools:layout="@layout/fragment_user_details">
+
+        <argument
+            android:name="userId"
+            app:argType="long"
+            app:nullable="false" />
+
+        <argument
+            android:name="userName"
+            app:argType="string"
+            app:nullable="false" />
+
+        <argument
+            android:name="avatarUrl"
+            app:argType="string"
+            app:nullable="false" />
+    </fragment>
 
 </navigation>

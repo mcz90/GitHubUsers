@@ -2,9 +2,15 @@
 <resources>
     <declare-styleable name="ToolbarView">
         <attr name="tv_title" format="string" />
+        <attr name="tv_searchAvailable" format="boolean" />
     </declare-styleable>
 
     <declare-styleable name="LabelWithBody">
         <attr name="lwb_label" format="reference|string" />
+    </declare-styleable>
+
+    <declare-styleable name="LabelWithIconView">
+        <attr name="lwi_label" format="reference|string" />
+        <attr name="lwi_icon" format="reference" />
     </declare-styleable>
 </resources>

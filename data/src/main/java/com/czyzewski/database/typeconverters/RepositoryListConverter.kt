@@ -8,13 +8,13 @@ import com.google.gson.reflect.TypeToken
 class RepositoryListConverter {
 
     @TypeConverter
-    fun fromString(value: String?): List<RepositoryEntity> {
+    fun fromString(value: String): List<RepositoryEntity> {
         val type = object : TypeToken<List<RepositoryEntity>>() {}.type
         return Gson().fromJson(value, type)
     }
 
     @TypeConverter
-    fun fromRepositories(entities: List<RepositoryEntity>): String? {
-        return Gson().toJson(entities)
+    fun fromRepository(entity: List<RepositoryEntity>): String {
+        return Gson().toJson(entity)
     }
 }

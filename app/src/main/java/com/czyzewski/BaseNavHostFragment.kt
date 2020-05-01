@@ -23,7 +23,6 @@ class BaseNavHostFragment : NavHostFragment() {
         )
     }
 
-
     @Navigator.Name("fragment")
     internal inner class BaseFragmentNavigator(
         context: Context,
@@ -31,14 +30,12 @@ class BaseNavHostFragment : NavHostFragment() {
         containerId: Int
     ) : FragmentNavigator(context, manager, containerId) {
 
-
         private val defaultNavOptions = NavOptions.Builder()
             .setEnterAnim(R.anim.nav_default_enter_anim)
             .setExitAnim(R.anim.nav_default_exit_anim)
             .setPopEnterAnim(R.anim.nav_default_pop_enter_anim)
             .setPopExitAnim(R.anim.nav_default_pop_exit_anim)
             .build()
-
 
         override fun navigate(
             destination: Destination,

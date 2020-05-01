@@ -1,0 +1,69 @@
+{
+  "project_info": {
+    "project_number": "204040399959",
+    "firebase_url": "https://git-hub-users.firebaseio.com",
+    "project_id": "git-hub-users",
+    "storage_bucket": "git-hub-users.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:204040399959:android:4983281e7eb26b387a8712",
+        "android_client_info": {
+          "package_name": "com.czyzewski.githubusers"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "204040399959-5nk57jdc17illduhvp5pb351p6phflj0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLyxpx9x3sivo4_iMUhePxPhQtg6IA1HU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "204040399959-5nk57jdc17illduhvp5pb351p6phflj0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:204040399959:android:ad7b611eab95c17c7a8712",
+        "android_client_info": {
+          "package_name": "com.czyzewski.githubuserslist"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "204040399959-5nk57jdc17illduhvp5pb351p6phflj0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLyxpx9x3sivo4_iMUhePxPhQtg6IA1HU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "204040399959-5nk57jdc17illduhvp5pb351p6phflj0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

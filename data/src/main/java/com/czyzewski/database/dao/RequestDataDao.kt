@@ -1,26 +1,23 @@
 package com.czyzewski.database.dao
 
 import androidx.room.*
-import com.czyzewski.database.entity.RequestDataEntity
+import com.czyzewski.database.entity.RequestParamsEntity
 
 @Dao
 interface RequestDataDao {
     @Query("SELECT * FROM requestData")
-    suspend fun get(): RequestDataEntity?
+    suspend fun get(): RequestParamsEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(entities: RequestDataEntity)
+    suspend fun insert(entities: RequestParamsEntity)
 
-    @Query("UPDATE requestData SET allLoaded=:allLoaded")
-    suspend fun updateAllLoadedParam(allLoaded: Boolean)
-
-    @Query("UPDATE requestData SET nextRemainingParam=:since")
-    suspend fun updateNextRemainingParam(since: Long)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertRequestParams(entity: RequestParamsEntity)
 
     @Transaction
-    suspend fun getRequestData(): RequestDataEntity {
+    suspend fun getRequestParams(): RequestParamsEntity {
         if (get() == null) {
-            insert(RequestDataEntity())
+            insert(RequestParamsEntity())
         }
         return get()!!
     }

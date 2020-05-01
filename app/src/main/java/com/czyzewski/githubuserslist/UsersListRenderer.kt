@@ -1,6 +1,5 @@
 package com.czyzewski.githubuserslist
 
-import android.content.Context
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.widget.ProgressBar
@@ -8,39 +7,24 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.czyzewski.githubuserslist.LoadingState.*
 import com.czyzewski.githubuserslist.UsersListIntent.*
-import com.czyzewski.githubuserslist.UsersListState.*
-import com.czyzewski.models.HeaderDataModel
-import com.czyzewski.ui.ErrorView
-import com.czyzewski.ui.ProgressView
-import com.czyzewski.ui.ToolbarView
+import com.czyzewski.net.error.ErrorModel.*
+import com.czyzewski.net.error.ErrorSource.*
+import com.czyzewski.toUiModel
+import com.czyzewski.ui.addScrollToBottomListener
+import com.czyzewski.ui.view.ErrorView
+import com.czyzewski.ui.view.ProgressView
+import com.czyzewski.ui.view.ToolbarView
 import kotlinx.coroutines.InternalCoroutinesApi
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.util.*
+import kotlinx.serialization.ImplicitReflectionSerializer
 
-
-interface IUsersListRenderer {
-    fun render(state: UsersListState)
-    fun retain(
-        recyclerView: RecyclerView,
-        toolbar: ToolbarView,
-        progressView: ProgressView,
-        bottomProgressBar: ProgressBar,
-        errorView: ErrorView
-    )
-
-    fun onConfigurationChanged(orientation: Int)
-
-}
-
+@ImplicitReflectionSerializer
 @InternalCoroutinesApi
 class UsersListRenderer(
-    context: Context,
-    private val eventHandler: IUsersListEventHandler
+    private val eventHandler: IUsersListEventHandler,
+    private val adapter: UsersListAdapter
 ) : IUsersListRenderer {
-
-    private val adapter = UsersListAdapter(context)
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var toolbar: ToolbarView
@@ -48,99 +32,98 @@ class UsersListRenderer(
     private lateinit var bottomProgressBar: ProgressBar
     private lateinit var errorView: ErrorView
 
-
-    override fun render(state: UsersListState) = when (state) {
-        is UsersEmpty -> {
-            recyclerView.isVisible = false
-            bottomProgressBar.isVisible = false
-            progressView.hide()
-            toolbar.setRequestData(state.headerDataModel)
-            errorView.hide()
-        }
-        AllLoaded -> {
-            recyclerView.isVisible = true
-            bottomProgressBar.isVisible = false
-            progressView.hide()
-            errorView.hide()
-        }
-        UsersLoading -> {
-            recyclerView.isVisible = false
-            bottomProgressBar.isVisible = false
-            progressView.show()
-            errorView.hide()
-        }
-        MoreUsersLoading -> {
-            recyclerView.isVisible = true
-            bottomProgressBar.isVisible = true
-            progressView.hide()
-            errorView.hide()
-        }
-        is UsersError -> {
-            recyclerView.isVisible = false
-            bottomProgressBar.isVisible = false
-            progressView.hide()
-            errorView.show()
-            toolbar.setRequestData(state.headerDataModel)
-            errorView.setErrorText("Error")
-        }
-        is UsersLoaded -> {
-            recyclerView.isVisible = true
-            bottomProgressBar.isVisible = false
-            progressView.hide()
-            errorView.hide()
-            adapter.setList(state.data)
-            adapter.setOnSyncIconClickListener {
-                eventHandler.handle(SyncIconClicked(it))
-            }
-            toolbar.setRequestData(state.headerDataModel)
-            eventHandler.handle(UsersFetched(state.data.map { it.login to it.id }))
-        }
-        is RepositoriesEmpty -> {
-            toolbar.setRequestData(state.headerDataModel)
-            adapter.repositoriesEmpty(state.userId, state.issueResId)
-        }
-        is RepositoriesLoading -> {
-            adapter.repositoriesLoadingStarted(state.userId)
-        }
-        is RepositoriesSyncing -> {
-            adapter.repositoriesSyncingStarted(state.userId)
-        }
-        is RepositoriesError -> {
-            toolbar.setRequestData(state.headerDataModel)
-            adapter.repositoriesLoadingError(state.userId, state.issueResId)
-        }
-        is RepositoriesLoaded -> {
-            toolbar.setRequestData(state.headerDataModel)
-            adapter.repositoriesLoaded(state.userId, state.data)
-        }
-        is SyncSuccess -> {
-            toolbar.setRequestData(state.headerDataModel)
-            adapter.repositoriesSyncSuccess(state.userId, state.data)
-        }
-        is SyncError -> {
-            state.headerDataModel?.let {
-                toolbar.setRequestData(it)
-            }
-            adapter.repositoriesSyncError(state.userId, state.issueResId)
-        }
+    init {
+        eventHandler.handle(Init)
     }
 
-    override fun retain(
-        recyclerView: RecyclerView,
-        toolbar: ToolbarView,
-        progressView: ProgressView,
-        bottomProgressBar: ProgressBar,
-        errorView: ErrorView
-    ) {
-        this.recyclerView = recyclerView.apply {
+
+    override fun render(state: UsersListState) {
+        state.rateLimit?.let {
+            toolbar.hideProgress()
+            toolbar.setRateLimit(it.toUiModel())
+        }
+        state.inSearchMode?.let {
+            when (it) {
+                true -> toolbar.enterSearchMode()
+                false -> toolbar.exitSearchMode()
+            }
+        }
+
+        state.users?.let { usersList ->
+            adapter.setList(usersList)
+            adapter.setOnUserClickListener {
+                eventHandler.handle(UserClicked(it.first, it.second, it.third))
+            }
+            eventHandler.handle(UsersFetched(usersList.map { user -> user.login to user.id }))
+        }
+
+        state.repositories?.let { reposModel ->
+            adapter.repositoriesLoaded(reposModel, state.isSyncingRepos)
+            adapter.setOnSyncIconClickListener { eventHandler.handle(SyncIconClicked(it)) }
+        }
+
+        recyclerView.isVisible =
+            (state.errorModel == null || state.loadingState == null) && state.loadingState != INITIAL
+
+        state.loadingState?.let { loadingState ->
+            if (loadingState == LOADING_REPO) {
+                adapter.repositoriesLoadingStarted(
+                    state.updatedUserId ?: throw IllegalStateException("sdfsdfsdf"),
+                    state.isSyncingRepos
+                )
+            }
+        }
+        progressView.isVisible = state.loadingState?.let { it == INITIAL } ?: false
+        bottomProgressBar.isVisible = state.loadingState?.let { it == MORE } ?: false
+
+        state.loadingState
+            ?.takeIf { it == LOADING_RATE_LIMIT }
+            ?.let { toolbar.showProgress() }
+
+        state.errorModel?.let { error ->
+            when (error.source) {
+                USERS -> {
+                    errorView.setErrorText(
+                        when (error) {
+                            is ApiError -> error.errorMessage
+                            is DatabaseError -> error.errorMessage
+                            is UnhandledError -> "UnhandledError"
+                            is NoInternetError -> "NoInternetError"
+                            is ConnectionLostError -> error.errorMessage
+                        }
+                    )
+                    errorView.isVisible = true
+                }
+                REPOS -> adapter.repositoriesLoadingError(
+                    state.updatedUserId ?: throw IllegalStateException("sdfsdfsdf")
+                )
+                RATE_LIMIT -> {
+                    toolbar.hideProgress()
+                    toolbar.showError()
+                }
+                else -> throw IllegalStateException("sdfsdfsdf")
+            }
+        }
+        errorView.isVisible = state.errorModel?.let { it.source == USERS } ?: false
+    }
+
+    override fun attach(components: UserListComponents) {
+        this.recyclerView = components.recyclerView.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = this@UsersListRenderer.adapter
             addScrollToBottomListener { eventHandler.handle(ScrolledToBottom) }
         }
-        this.toolbar = toolbar.apply { onBackClick { eventHandler.handle(BackPress) } }
-        this.progressView = progressView
-        this.bottomProgressBar = bottomProgressBar
-        this.errorView = errorView
+        this.toolbar = components.toolbarView.apply {
+            onBackClick { eventHandler.handle(BackPress) }
+            onRefreshClick { eventHandler.handle(RefreshPress) }
+            onSearchClick { eventHandler.handle(SearchPress(it)) }
+            onSearchInputChanged {
+                // TODO eventHandler.handle(SearchInputChanged(it))
+            }
+        }
+        this.progressView = components.progressView
+        this.bottomProgressBar = components.bottomProgressBar
+        this.errorView = components.errorView
     }
 
     override fun onConfigurationChanged(orientation: Int) {
@@ -155,38 +138,5 @@ class UsersListRenderer(
             )
         }
         adapter.notifyItemRangeChanged(0, adapter.itemCount)
-    }
-
-    private fun RecyclerView.addScrollToBottomListener(onScrolledToBottom: () -> Unit) {
-        addOnScrollListener(object : RecyclerView.OnScrollListener() {
-
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                if (isScrolledToBottom(dy)) {
-                    onScrolledToBottom()
-                }
-            }
-
-            private fun isScrolledToBottom(dy: Int) =
-                adapter?.let {
-                    require(layoutManager is LinearLayoutManager)
-                    it.itemCount > 0 && dy > 0 && (layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition() == it.itemCount - 1
-                } ?: false
-        })
-    }
-
-    private fun ToolbarView.setRequestData(headerDataModel: HeaderDataModel) {
-        if (headerDataModel is HeaderDataModel.DataModel) {
-            headerDataModel.apply {
-                val formatter: DateFormat =
-                    SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-                formatter.timeZone = TimeZone.getTimeZone("GMT+2")
-                val date = formatter.format(timeUntilReset)
-                toolbar.setRateLimit(
-                    timeToReset = date,
-                    remaining = remainingRequest,
-                    total = requestsLimit
-                )
-            }
-        }
     }
 }

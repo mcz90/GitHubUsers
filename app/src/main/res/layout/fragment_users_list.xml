@@ -5,19 +5,21 @@
     android:layout_height="match_parent"
     android:background="@android:color/white">
 
-    <com.czyzewski.ui.ToolbarView
+    <com.czyzewski.ui.view.ToolbarView
         android:id="@+id/toolbarView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:tv_title="elo" />
+        app:tv_searchAvailable="true"
+        app:tv_title="list" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:descendantFocusability="beforeDescendants"
         app:layout_constraintBottom_toTopOf="@id/bottomProgressBar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -34,7 +36,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/recyclerView" />
 
-    <com.czyzewski.ui.ErrorView
+    <com.czyzewski.ui.view.ErrorView
         android:id="@+id/errorView"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -43,10 +45,11 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbarView" />
 
-    <com.czyzewski.ui.ProgressView
+    <com.czyzewski.ui.view.ProgressView
         android:id="@+id/progressView"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

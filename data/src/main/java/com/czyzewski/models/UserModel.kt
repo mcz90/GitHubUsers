@@ -1,7 +1,8 @@
 package com.czyzewski.models
 
-import androidx.annotation.StringRes
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class UserModel(
     val id: Long,
     val login: String,
@@ -10,12 +11,17 @@ data class UserModel(
     var repositories: Repositories
 )
 
+@Serializable
 sealed class Repositories {
-    object Loading : Repositories()
-    data class Loaded(var data: RepositoriesModel) : Repositories()
-    data class Empty(@StringRes val issueResId:Int) : Repositories()
-    data class Error(@StringRes val issueResId:Int) : Repositories()
-    object Syncing : Repositories()
-    data class SyncSuccess(val data: RepositoriesModel) : Repositories()
-    data class SyncError(@StringRes val issueResId: Int) : Repositories()
+    @Serializable
+    data class Loading(val isSyncing: Boolean = false) : Repositories()
+
+    @Serializable
+    data class Loaded(var data: RepositoriesModel, val isSyncing: Boolean = false) : Repositories()
+
+    @Serializable
+    object Empty : Repositories()
+
+    @Serializable
+    object Error : Repositories()
 }

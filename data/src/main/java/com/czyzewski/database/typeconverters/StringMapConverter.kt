@@ -9,11 +9,11 @@ class StringMapConverter {
     @TypeConverter
     fun fromString(value: String): Map<String, String> {
         val type = object : TypeToken<Map<String, String>>() {}.type
-        return Gson().fromJson(value, type);
+        return Gson().fromJson(value, type)
     }
 
     @TypeConverter
     fun fromStringMap(map: Map<String, String>): String {
-        return Gson().toJson(map);
+        return Gson().toJson(map)
     }
 }

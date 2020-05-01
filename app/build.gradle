@@ -3,96 +3,40 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: "androidx.navigation.safeargs.kotlin"
 apply plugin: 'kotlin-kapt'
+apply plugin: 'kotlinx-serialization'
+apply from: 'dependencies.gradle'
+apply from: "${rootDir}/config/quality/quality.gradle"
 
 android {
-    compileSdkVersion 29
     defaultConfig {
-        applicationId "com.czyzewski.guthubusers"
-        minSdkVersion 21
-        targetSdkVersion 29
-        versionCode 1
-        versionName "1.0"
-
+        applicationId "com.czyzewski.githubusers"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunnerArguments clearPackageData: 'true'
     }
 
     buildTypes {
+        debug {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-
-    androidExtensions {
-        experimental = true
+    testOptions {
+        unitTests {
+            returnDefaultValues = true
+            all {
+                maxParallelForks = Runtime.runtime.availableProcessors()
+            }
+            animationsDisabled = true
+        }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
-    }
-
 }
 
-dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'androidx.core:core-ktx:1.2.0'
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-
-
-    testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0"
-
-    // Testing
-    testImplementation "junit:junit:4.13"
-    testImplementation "org.assertj:assertj-core:3.12.2"
-    testImplementation "org.mockito:mockito-core:2.28.2"
-    androidTestImplementation "androidx.test:runner:1.2.0"
-    androidTestImplementation "androidx.test.espresso:espresso-core:3.2.0"
-    implementation 'com.facebook.stetho:stetho:1.5.1'
-    implementation 'com.google.code.gson:gson:2.8.5'
-
-    implementation project(":ui")
-    implementation project(':data')
-    // optional - Test helpers for LiveData
-    testImplementation "androidx.arch.core:core-testing:2.1.0"
-    def nav_version = "2.3.0-alpha03"
-
-    // Navigation
-    implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
-    implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
-
-    // Dynamic Feature Module Support
-    implementation "androidx.navigation:navigation-dynamic-features-fragment:$nav_version"
-
-    // Testing Navigation
-    androidTestImplementation "androidx.navigation:navigation-testing:$nav_version"
-
-    def paging_version = "2.1.1"
-    implementation "androidx.paging:paging-runtime-ktx:2.1.1"
-    testImplementation "androidx.paging:paging-common-ktx:$paging_version"
-    // For Kotlin use paging-common-ktx
-
-
-
-
-    implementation "com.github.bumptech.glide:glide:4.10.0"
-    kapt "com.github.bumptech.glide:compiler:4.9.0"
-
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.2'
-
-    implementation "com.jakewharton.timber:timber:4.7.1"
-    implementation "io.mockk:mockk:1.9.3.kotlin12"
-    implementation "org.jetbrains.kotlin:kotlin-reflect:1.3.70"
-
-    implementation "org.koin:koin-androidx-scope:2.0.1"
-    implementation 'org.koin:koin-androidx-viewmodel:2.0.1'
-    testImplementation "org.koin:koin-test:2.0.1"
-}
+apply plugin: 'com.google.gms.google-services'

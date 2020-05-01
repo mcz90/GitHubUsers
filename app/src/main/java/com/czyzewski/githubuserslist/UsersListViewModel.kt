@@ -1,146 +1,122 @@
 package com.czyzewski.githubuserslist
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewModelScope
 import com.czyzewski.githubuserslist.UsersListIntent.*
-import com.czyzewski.githubuserslist.usevase.GetUsersUserCase
-import com.czyzewski.models.RepositoriesResponse
-import com.czyzewski.models.UsersResponse.*
-import com.czyzewski.repository.UsersRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.InternalCoroutinesApi
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.launch
-import kotlin.coroutines.CoroutineContext
+import com.czyzewski.githubuserslist.mappers.IUserReducer
+import com.czyzewski.mvi.MviViewModel
+import com.czyzewski.usecase.*
+import com.czyzewski.usecase.GetRateLimitUseCase.RateLimitData
+import com.czyzewski.usecase.GetReposUseCase.ReposData
+import com.czyzewski.usecase.GetStoredUsersUseCase.StoredUsersData
+import com.czyzewski.usecase.GetUsersUseCase.UsersData
+import com.czyzewski.usecase.SyncUsersReposUseCase.SyncReposData
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
+import kotlinx.serialization.ImplicitReflectionSerializer
 
-
+@ObsoleteCoroutinesApi
+@FlowPreview
+@ImplicitReflectionSerializer
 @ExperimentalCoroutinesApi
 @InternalCoroutinesApi
 class UsersListViewModel(
     private val navigator: IUsersListNavigator,
-    private val repository: UsersRepository,
-    private val getUsersUserCase: GetUsersUserCase
-) : IUsersListViewModel, ViewModel() {
+    private val getUsersUseCase: GetUsersUseCase,
+    private val getStoredUsersUseCase: GetStoredUsersUseCase,
+    private val getReposUseCase: GetReposUseCase,
+    private val syncUsersReposUseCase: SyncUsersReposUseCase,
+    private val getRateLimitUseCase: GetRateLimitUseCase,
+    private val reducer: IUserReducer,
+    viewLifecycleOwner: LifecycleOwner
+) : MviViewModel<UsersListState, UsersListIntent>(viewLifecycleOwner) {
 
-    private val _state = MutableLiveData<UsersListState>()
-    override val state: LiveData<UsersListState>
-        get() = _state
-
-    override val coroutineContext: CoroutineContext = Dispatchers.IO
-
-    init {
-        getUsers(true)
-    }
-
-    override fun onIntentReceived(intent: UsersListIntent) = when (intent) {
-        BackPress -> {
+    override fun onIntentReceived(intent: UsersListIntent) {
+        when (intent) {
+            Init -> {
+                getUsers(true)
+                getRateLimit()
+            }
+            BackPress -> { }
+            is SearchPress -> toggleSearchState(intent.inSearchMode)
+            is SearchInputChanged -> getStoredUsers(intent.query)
+            RefreshPress -> getRateLimit()
+            ScrolledToBottom -> getUsers(false)
+            is UsersFetched -> getRepos(intent.list)
+            is SyncIconClicked -> syncUserRepos(intent.data.second, intent.data.first)
+            is UserClicked -> navigator.navigateToUserDetailsScreen(
+                intent.userId,
+                intent.userName,
+                intent.transitionData
+            )
         }
-        ScrolledToBottom -> getUsers(false)
-        is UsersFetched -> getRepositories(intent.list)
-        is SyncIconClicked -> syncUserRepositories(intent.data)
     }
 
     private fun getUsers(first: Boolean) {
         viewModelScope.launch {
-            getUsersUserCase.getUsers(first)
-                .map {
-                    when (it) {
-                        is Loading -> UsersListState.UsersLoading
-                        is Loaded -> UsersListState.UsersLoaded(it.data, it.headerDataModel)
-                        is MoreLoading -> UsersListState.MoreUsersLoading
-                        AllLoaded -> UsersListState.AllLoaded
-                        is Empty -> UsersListState.UsersEmpty(
-                            it.headerDataModel,
-                            R.string.users_list_users_error
-                        )
-                        is Error -> UsersListState.UsersError(
-                            it.headerDataModel,
-                            R.string.users_list_users_error
-                        )
-                    }
-                }
+            getUsersUseCase.getUsers(first)
+                .onStart { emit(UsersData.Loading(first)) }
+                .catch { emit(UsersData.Error(it)) }
+                .map { reducer.reduce(it) }
                 .flowOn(Dispatchers.IO)
-                .collect { _state.value = it }
+                .collect { state.value = it }
         }
     }
 
-    private fun syncUserRepositories(pair: Pair<String, Long>) {
+    private fun getStoredUsers(query: String) {
         viewModelScope.launch {
-            repository.syncUserRepos(
-                userId = pair.second,
-                userName = pair.first,
-                type = "owner",
-                perPage = 3
-            ).map {
-                when (it) {
-                    is RepositoriesResponse.Syncing -> UsersListState.RepositoriesSyncing(
-                        it.userId
-                    )
-                    is RepositoriesResponse.SyncSuccess -> UsersListState.SyncSuccess(
-                        it.userId,
-                        it.repositories,
-                        it.headerDataModel
-                    )
-                    is RepositoriesResponse.Empty -> UsersListState.RepositoriesEmpty(
-                        it.userId,
-                        it.headerDataModel,
-                        R.string.users_list_users_repositories_empty
-                    )
-                    is RepositoriesResponse.SyncError -> UsersListState.SyncError(
-                        it.headerDataModel,
-                        it.userId,
-                        R.string.users_list_users_repositories_error
-                    )
-                    else -> throw IllegalStateException()
-                }
-            }
-                .onStart { RepositoriesResponse.Syncing(pair.second) }
+            getStoredUsersUseCase.get(query)
+                .onStart { emit(StoredUsersData.Loading) }
+                .catch { emit(StoredUsersData.Error(it)) }
+                .map { reducer.reduce(it) }
                 .flowOn(Dispatchers.IO)
-                .collect { _state.value = it }
+                .collect { state.value = it }
         }
     }
 
-    private fun getRepositories(list: List<Pair<String, Long>>) {
-        list.forEach { pair ->
+    private fun getRepos(params: List<Pair<String, Long>>) {
+        params.forEach { param ->
             viewModelScope.launch {
-                repository.getUserRepos(
-                    userId = pair.second,
-                    userName = pair.first,
-                    type = "owner",
-                    perPage = 3
-                ).map {
-                    when (it) {
-                        is RepositoriesResponse.Loading -> UsersListState.RepositoriesLoading(
-                            it.userId
-                        )
-                        is RepositoriesResponse.Loaded -> UsersListState.RepositoriesLoaded(
-                            it.userId,
-                            it.repositories,
-                            it.headerDataModel
-                        )
-                        is RepositoriesResponse.Empty -> UsersListState.RepositoriesEmpty(
-                            it.userId,
-                            it.headerDataModel,
-                            R.string.users_list_users_repositories_empty
-                        )
-                        is RepositoriesResponse.Error -> UsersListState.RepositoriesError(
-                            it.userId,
-                            it.headerDataModel,
-                            R.string.users_list_users_repositories_error
-                        )
-                        else -> throw IllegalStateException()
-                    }
-                }
-                    .onStart { RepositoriesResponse.Loading(pair.second) }
+                getReposUseCase.getRepos(param.second, param.first)
+                    .onStart { emit(ReposData.Loading(param.second)) }
+                    .catch { emit(ReposData.Error(param.second, it)) }
+                    .map { reducer.reduce(it) }
                     .flowOn(Dispatchers.IO)
-                    .collect { _state.value = it }
+                    .collect { state.value = it }
             }
         }
     }
+
+    private fun syncUserRepos(userId: Long, userName: String) {
+        viewModelScope.launch {
+            syncUsersReposUseCase.syncRepos(userId, userName)
+                .onStart { emit(SyncReposData.Loading(userId)) }
+                .catch { emit(SyncReposData.Error(userId, it)) }
+                .map { reducer.reduce(it) }
+                .flowOn(Dispatchers.IO)
+                .collect { state.value = it }
+        }
+    }
+
+    private fun getRateLimit() {
+        viewModelScope.launch {
+            getRateLimitUseCase.getRateLimit()
+                .onStart { emit(RateLimitData.Loading) }
+                .catch { emit(RateLimitData.Error(it)) }
+                .map { reducer.reduce(it) }
+                .flowOn(Dispatchers.IO)
+                .collect { state.value = it }
+        }
+    }
+
+    private fun toggleSearchState(currentlyInSearchMode: Boolean) {
+        viewModelScope.launch {
+            state.value
+                ?.takeIf { it.inSearchMode != currentlyInSearchMode }
+                ?.let { state.value = state.value?.copy(inSearchMode = !currentlyInSearchMode) }
+        }
+    }
+
+
+    fun getStaste() = state
 }
