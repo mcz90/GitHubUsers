@@ -20,4 +20,8 @@ class UserDetailsView(private val renderer: IUserDetailsRenderer) : IUserDetails
     override fun onConfigurationChanged(orientation: Int) {
         TODO("Not yet implemented")
     }
+
+    override fun detach() {
+
+    }
 }

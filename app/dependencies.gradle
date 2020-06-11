@@ -15,7 +15,7 @@ dependencies {
 
     implementation project(":ui")
     implementation project(':data')
-    implementation 'com.github.mcz90:MVITemplate:0.1.4'
+    implementation 'com.github.mcz90:MVITemplate:0.2'
     // optional - Test helpers for LiveData
     testImplementation "androidx.arch.core:core-testing:2.1.0"
     def nav_version = "2.3.0-beta01"
