@@ -6,7 +6,8 @@ skills
 
 Protocol:
 ```Swift
-if let firstElement = oddNumbers.first, let lastElement = oddNumbers.last { print(firstElement, lastElement, separator: ", ")}```
+if let firstElement = oddNumbers.first, let lastElement = oddNumbers.last { print(firstElement, lastElement, separator: ", ")}\
+```
 
 * Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lacinia tincidunt laoreet. Morbi ac blandit lacus, quis pulvinar libero. Praesent diam nulla, volutpat sed.
 
