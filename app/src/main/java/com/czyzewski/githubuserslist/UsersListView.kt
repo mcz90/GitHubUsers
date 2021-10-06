@@ -20,4 +20,8 @@ class UsersListView(private val renderer: IUsersListRenderer) : IUsersListView {
     override fun onConfigurationChanged(orientation: Int) {
         renderer.onConfigurationChanged(orientation)
     }
+
+    override fun detach() {
+
+    }
 }
